@@ -11,19 +11,18 @@
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)](https://www.framer.com/motion/)
 
-[![Node.js](https://img.shields.io/badge/Node.js-5FA04E?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
-[![Express](https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![PHP](https://img.shields.io/badge/PHP_8-777BB4?style=for-the-badge&logo=php&logoColor=white)](https://www.php.net/)
+[![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Gemini](https://img.shields.io/badge/Google_Gemini-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
 
 <br/>
 
 ![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)
-![Version](https://img.shields.io/badge/Version-1.0.0-brightgreen?style=flat-square)
+![Version](https://img.shields.io/badge/Version-2.0.0-brightgreen?style=flat-square)
 
 <br/>
 
-**AI Quiz Battle** is a full-stack MERN web app where you go head-to-head against a simulated AI opponent in a 5-round quiz match. Pick any topic, choose your difficulty, and the **Gemini 2.5 Flash** model generates a fresh set of questions on the fly — no static question banks, every game is unique.
+**AI Quiz Battle** is a full-stack web app where you go head-to-head against a simulated AI opponent in a 5-round quiz match. Pick any topic, choose your difficulty, and the **Gemini 2.5 Flash** model generates a fresh set of questions on the fly — no static question banks, every game is unique. Built with a **React** frontend and a **PHP + MySQL** backend.
 
 [Getting Started](#-getting-started) · [Features](#-features) · [Tech Stack](#-tech-stack) · [Project Structure](#-project-structure)
 
@@ -39,7 +38,7 @@
 | ⚔️ **AI Opponent** | Compete against a simulated neural-net opponent whose accuracy scales with difficulty |
 | 📈 **Adaptive Difficulty** | The game adjusts difficulty between rounds based on your speed and accuracy |
 | ⚡ **Power-Ups** | 50/50 elimination, +10s extra time, and hint reveal — one use each per game |
-| 🏆 **Leaderboard** | Scores persist in MongoDB with a global Hall of Fame and podium for the top 3 |
+| 🏆 **Leaderboard** | Scores persist in MySQL with a global Hall of Fame and podium for the top 3 |
 | 📜 **Game History** | Full local history of every match with topic, difficulty, scores, and outcome |
 | ⚙️ **Settings** | Configurable timer duration (10s–30s), sound toggle, animation toggle, and data management |
 | 🔊 **Sound Effects** | Immersive audio — ticking timers, correct/wrong buzzes, power-up activation, victory/defeat fanfares |
@@ -62,11 +61,10 @@
 ### Backend
 | Technology | Purpose |
 |---|---|
-| **Node.js + Express** | REST API server |
-| **MongoDB + Mongoose** | Persistent score & leaderboard storage |
-| **Google Generative AI SDK** | Gemini 2.5 Flash integration for question generation |
-| **Zod** | Runtime schema validation of AI responses |
-| **mongodb-memory-server** | Zero-config fallback DB for development |
+| **PHP 8** | Server-side API with built-in router |
+| **MySQL** | Persistent score & leaderboard storage via PDO |
+| **Google Gemini REST API** | Gemini 2.5 Flash integration for question generation (via cURL) |
+| **XAMPP** | Local development environment (Apache + MySQL + PHP) |
 
 ---
 
@@ -75,12 +73,10 @@
 ```
 ai-quiz-battle/
 ├── backend/
-│   ├── models/
-│   │   └── Score.js            # Mongoose schema for leaderboard entries
-│   ├── db.js                   # MongoDB connection logic
-│   ├── dbMock.js               # In-memory DB fallback
-│   ├── server.js               # Express API (generate, submit, leaderboard)
-│   └── .env                    # API keys & DB URI (not committed)
+│   ├── index.php               # PHP API router (generate, submit, leaderboard)
+│   ├── database.php            # MySQL PDO connection & auto-setup
+│   ├── .htaccess               # Apache URL rewriting
+│   └── .env                    # API keys & DB config (not committed)
 │
 ├── frontend/
 │   └── src/
@@ -111,8 +107,8 @@ ai-quiz-battle/
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) v16+
-- [MongoDB](https://www.mongodb.com/) (local install or [Atlas](https://www.mongodb.com/atlas) free tier)
+- [XAMPP](https://www.apachefriends.org/) (includes PHP 8 + MySQL)
+- [Node.js](https://nodejs.org/) v16+ (for the React frontend)
 - [Gemini API Key](https://aistudio.google.com/app/apikey) (free)
 
 ### 1 · Clone & Install
@@ -123,36 +119,44 @@ cd Ai-Quiz-Battle
 ```
 
 ```bash
-# Backend
-cd backend && npm install
-
-# Frontend (new terminal)
+# Frontend dependencies
 cd frontend && npm install
 ```
+
+> **Note:** The PHP backend has **zero npm dependencies** — PHP and MySQL handle everything natively.
 
 ### 2 · Configure Environment
 
 Create `backend/.env`:
 
 ```env
-PORT=5000
 GEMINI_API_KEY=your_gemini_api_key
-MONGODB_URI=your_mongodb_connection_string
+
+# MySQL (XAMPP defaults)
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=root
+DB_PASS=
+DB_NAME=ai_quiz_battle
 ```
 
-> **Note:** If `MONGODB_URI` is not provided, the app automatically uses `mongodb-memory-server` as an in-memory database — no setup needed for quick testing.
+### 3 · Start MySQL
 
-### 3 · Run
+Open **XAMPP Control Panel** and start the **MySQL** service.
+
+### 4 · Run
 
 ```bash
-# Terminal 1 — Backend
-cd backend && npm run dev
+# Terminal 1 — PHP Backend
+cd backend && php -S localhost:5000 index.php
 
-# Terminal 2 — Frontend
+# Terminal 2 — React Frontend
 cd frontend && npm run dev
 ```
 
-Open **http://localhost:5173** and start battling! ⚔️
+Open **http://localhost:3000** and start battling! ⚔️
+
+> **Tip:** You can view your database at any time via phpMyAdmin: http://localhost/phpmyadmin
 
 ---
 
@@ -161,7 +165,7 @@ Open **http://localhost:5173** and start battling! ⚔️
 Add these in your repository **Settings → Topics** for discoverability:
 
 ```
-ai  quiz  gemini-api  react  nodejs  mongodb  mern-stack  tailwindcss  framer-motion  fullstack
+ai  quiz  gemini-api  react  php  mysql  tailwindcss  framer-motion  fullstack  xampp
 ```
 
 ---
